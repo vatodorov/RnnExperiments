@@ -41,7 +41,7 @@ dataset = dataframe.values
 dataset = dataset.astype('float32')
 
 # Normalize the data between 0 - 1
-scaler = MinMaxScaler(feature_range=(0, 1), copy = True)
+scaler = MinMaxScaler(feature_range = (0, 1), copy = True)
 dataset = scaler.fit_transform(dataset)
 
 # Split the data in train and validaiton
@@ -57,7 +57,6 @@ print(len(train), len(test), len(dataset))
 # to be provided with a specific array structure in the form of: [samples, time steps, features].
 trainY = train[ :, yVarCols]
 trainX = train[ :, xVarCols]
-
 testX = test[ :, xVarCols]
 
 dataframe_length = len(trainY)
@@ -67,6 +66,7 @@ dataframe_length = len(trainY)
 # reshape input to be [samples, time steps, features]
 trainX = numpy.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
 testX =  numpy.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
+
 
 ## The LSTM network expects the input data (X) to be provided with a specific
 # array structure in the form of: [samples, time steps, features]
@@ -93,19 +93,25 @@ trainPredict = modelFit.predict(trainX)
 testPredict = modelFit.predict(testX)
 
 
+numpy.shape(trainPredict)
+type(trainPredict)
+
+
 
 ##### WORK FROM HERE ON - THE CODE IS DONE THROUGH HERE !!!
 
 
 # invert predictions
-trainPredict = scaler.inverse_transform(trainPredict)
+trainPredict2 = scaler.inverse_transform(trainPredict)
 trainY = scaler.inverse_transform([trainY])
+
 testPredict = scaler.inverse_transform(testPredict)
 testY = scaler.inverse_transform([testY])
 
 # calculate root mean squared error
 trainScore = math.sqrt(mean_squared_error(trainY[0], trainPredict[:,0]))
 print('Train Score: %.2f RMSE' % (trainScore))
+
 testScore = math.sqrt(mean_squared_error(testY[0], testPredict[:,0]))
 print('Test Score: %.2f RMSE' % (testScore))
 
