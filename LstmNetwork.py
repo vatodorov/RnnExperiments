@@ -20,6 +20,8 @@ import math
 from pydataset import data
 from keras.models import Sequential
 from keras.layers import LSTM, Dense
+from keras import backend as K
+
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
@@ -83,19 +85,24 @@ modelFit.compile(optimizer = 'rmsprop',
                  metrics = ['accuracy'])
 
 # Train the model
-modelFit.fit(trainX, trainY,
-             epochs = 5,
-             batch_size = 1,
-             verbose = 1)
+modelEstimate = modelFit.fit(trainX, trainY,
+                             epochs = 5,
+                             batch_size = 1,
+                             verbose = 1)
 
 # make predictions
 trainPredict = modelFit.predict(trainX)
 testPredict = modelFit.predict(testX)
 
+# print the training accuracy and validation loss at each epoch
+print(modelEstimate.history)
 
-numpy.shape(trainPredict)
-type(trainPredict)
+# print the number of models of the network
+print(len(modelFit.layers))
 
+
+get_1st_layer_output = K.function([modelFit.layers[0].input],
+                                  [modelFit.layers[1].output])
 
 
 ##### WORK FROM HERE ON - THE CODE IS DONE THROUGH HERE !!!
