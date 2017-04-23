@@ -3,6 +3,8 @@
 """
 Created on Sat Apr 15 08:33:31 2017
 
+This is a trained Recurrent Neural Network (LSTM) to predict time series data
+
 Adopted from:
     http://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
 
@@ -64,7 +66,6 @@ testX = test[ :, xVarCols]
 dataframe_length = len(trainY)
 # dataframe_dim = Need to figure out how to count the columns of the array
 
-
 # reshape input to be [samples, time steps, features]
 trainX = numpy.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
 testX =  numpy.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
@@ -101,26 +102,15 @@ print(modelEstimate.history)
 print(len(modelFit.layers))
 
 
-get_1st_layer_output = K.function([modelFit.layers[0].input],
-                                  [modelFit.layers[1].output])
+# Invert predictions
+# Combine the arrays - stack the forecast with the predictive features
+df_train = np.column_stack((trainPredict, train[:, 1:]))
+trainPredict2 = scaler.inverse_transform(df_train)
 
-
-##### WORK FROM HERE ON - THE CODE IS DONE THROUGH HERE !!!
-
-
-# invert predictions
-trainPredict2 = scaler.inverse_transform(trainPredict)
-trainY = scaler.inverse_transform([trainY])
-
-testPredict = scaler.inverse_transform(testPredict)
-testY = scaler.inverse_transform([testY])
+df_test = np.column_stack((testPredict, test[:, 1:]))
+testPredict2 = scaler.inverse_transform(df_test)
 
 # calculate root mean squared error
-trainScore = math.sqrt(mean_squared_error(trainY[0], trainPredict[:,0]))
-print('Train Score: %.2f RMSE' % (trainScore))
-
-testScore = math.sqrt(mean_squared_error(testY[0], testPredict[:,0]))
-print('Test Score: %.2f RMSE' % (testScore))
 
 
 # Plot the forecast and actuals
