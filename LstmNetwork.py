@@ -15,7 +15,7 @@ Guide to Keras:
 """
 
 # Import the functions and classes we'll need
-import numpy
+import numpy as np
 import matplotlib.pyplot as plt
 import pandas
 import math
@@ -37,7 +37,7 @@ yVarCols = [0]
 
 
 # fix random seed for reproducibility
-numpy.random.seed(7)
+np.random.seed(7)
 
 # Extract the NumPy array from the dataframe and convert the integer values to
 # floating point values, which are more suitable for modeling with a neural network
@@ -67,8 +67,8 @@ dataframe_length = len(trainY)
 # dataframe_dim = Need to figure out how to count the columns of the array
 
 # reshape input to be [samples, time steps, features]
-trainX = numpy.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
-testX =  numpy.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
+trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
+testX =  np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
 
 ## The LSTM network expects the input data (X) to be provided with a specific
