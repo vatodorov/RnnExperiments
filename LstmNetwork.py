@@ -52,20 +52,18 @@ dataset = scaler.fit_transform(dataframe)
 
 # Split the data in train and validaiton
 trainSize = int(len(dataset) * 2/3)
-
 train = dataset[0:trainSize, :]
 validate = dataset[trainSize:len(dataset), :]
 
 print(len(train), len(validate), len(dataset))
 
-
 ## Modify the data for the LSTM network - The LSTM network expects the input data (X)
 # to be provided with a specific array structure in the form of: [samples, time steps, features].
-trainX = train[ :, xVarCols]
-validateX = validate[ :, xVarCols]
+trainX = train[:, xVarCols]
+validateX = validate[:, xVarCols]
 
-trainY = train[ :, yVarCols]
-validateY = validate[ :, yVarCols]
+trainY = train[:, yVarCols]
+validateY = validate[:, yVarCols]
 
 dataframe_length = len(trainY)
 # dataframe_dim = Need to figure out how to count the columns of the array
@@ -73,7 +71,6 @@ dataframe_length = len(trainY)
 # reshape input to be [samples, time steps, features]
 trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
 validateX =  np.reshape(validateX, (validateX.shape[0], 1, validateX.shape[1]))
-
 
 
 ## The LSTM network expects the input data (X) to be provided with a specific
@@ -102,40 +99,38 @@ trainPredict = modelFit.predict(trainX)
 validatePredict = modelFit.predict(validateX)
 
 # print the training accuracy and validation loss at each epoch
-print(modelEstimate.history)
-
 # print the number of models of the network
+print(modelEstimate.history)
 print(len(modelFit.layers))
 
 
 # Invert predictions
-# Combine the arrays - stack the forecast with the predictive features
 df_train = np.column_stack((trainPredict, train[:, 1:]))
 trainPredict2 = scaler.inverse_transform(df_train)
 
 df_validate = np.column_stack((validatePredict, validate[:, 1:]))
 validatePredict2 = scaler.inverse_transform(df_validate)
 
-# calculate root mean squared error
+
+# Plot the errors of the epochs and MSE
+plt.plot(modelEstimate.history['loss'])
+plt.plot(modelEstimate.history['val_loss'])
+plt.title('Model Error History')
+plt.ylabel('Mean Squared Error')
+plt.xlabel('Epochs')
+plt.legend(['Training Error', 'Validation Error'])
+plt.show()
+
 
 
 
 ##### Re-write the code from here on
 
-# Plot the forecast and actuals
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title('Keras RNN Error History')
-plt.ylabel('Mean Squared Error')
-plt.xlabel('Epoch')
-plt.legend(['Training Error', 'Validation Error'], loc='upper left')
-plt.show()
-
 # Plotting the hypothesis and Cross Validation y
-plt.plot(validationY[:-predictionPeriod])
-plt.plot(ho[predictionPeriod:]+np.mean(validationY)-np.mean(ho))
+plt.plot(validateY[ :-predictionPeriod])
+plt.plot(ho[predictionPeriod:] + np.mean(validationY) - np.mean(ho))
 plt.title('Keras Prediction Cross Validation Plot')
-plt.legend(['Hypothesis', 'Actual'], loc='upper left')
+plt.legend(['Hypothesis', 'Actual'], loc = 'upper left')
 plt.show()
 
 
