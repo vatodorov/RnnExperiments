@@ -19,7 +19,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas
 import math
-from pydataset import data
 from keras.models import Sequential
 from keras.layers import LSTM, Dense
 from keras import backend as K
@@ -28,10 +27,13 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
 # read in the Boston housing data
-dataframe = data("Boston")
+df = datasets.load_boston()
+df2 = df["data"]
+
 
 # select only specific columns - MAKE SURE THAT THE TARGET IS IN the first column
-dataframe = dataframe[['medv', 'crim', 'rm', 'age', 'lstat']]
+dataframe = df2[:, (11, 0, 6, 12, 5), ]
+
 xVarCols = [1, 2, 3, 4]
 yVarCols = [0]
 
@@ -39,36 +41,39 @@ yVarCols = [0]
 # fix random seed for reproducibility
 np.random.seed(7)
 
-# Extract the NumPy array from the dataframe and convert the integer values to
+## NO NEED FOR ARRAYS - Extract the NumPy array from the dataframe and convert the integer values to
 # floating point values, which are more suitable for modeling with a neural network
-dataset = dataframe.values
-dataset = dataset.astype('float32')
+# dataset = dataframe.values
+# dataset = dataset.astype('float32')
 
 # Normalize the data between 0 - 1
 scaler = MinMaxScaler(feature_range = (0, 1), copy = True)
-dataset = scaler.fit_transform(dataset)
+dataset = scaler.fit_transform(dataframe)
 
 # Split the data in train and validaiton
 trainSize = int(len(dataset) * 2/3)
 
 train = dataset[0:trainSize, :]
-test = dataset[trainSize:len(dataset), :]
+validate = dataset[trainSize:len(dataset), :]
 
-print(len(train), len(test), len(dataset))
+print(len(train), len(validate), len(dataset))
 
 
 ## Modify the data for the LSTM network - The LSTM network expects the input data (X)
 # to be provided with a specific array structure in the form of: [samples, time steps, features].
-trainY = train[ :, yVarCols]
 trainX = train[ :, xVarCols]
-testX = test[ :, xVarCols]
+validateX = validate[ :, xVarCols]
+
+trainY = train[ :, yVarCols]
+validateY = validate[ :, yVarCols]
 
 dataframe_length = len(trainY)
 # dataframe_dim = Need to figure out how to count the columns of the array
 
 # reshape input to be [samples, time steps, features]
 trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
-testX =  np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
+validateX =  np.reshape(validateX, (validateX.shape[0], 1, validateX.shape[1]))
+
 
 
 ## The LSTM network expects the input data (X) to be provided with a specific
@@ -81,7 +86,7 @@ modelFit.add(LSTM(4,
 modelFit.add(Dense(1))
 
 # Before training the model, configure the learning process via the compile method
-modelFit.compile(optimizer = 'rmsprop',
+modelFit.compile(optimizer = 'adam',
                  loss = 'mean_squared_error',
                  metrics = ['accuracy'])
 
@@ -89,11 +94,12 @@ modelFit.compile(optimizer = 'rmsprop',
 modelEstimate = modelFit.fit(trainX, trainY,
                              epochs = 5,
                              batch_size = 1,
-                             verbose = 1)
+                             verbose = 1,
+                             validation_data=(validateX, validateY))
 
 # make predictions
 trainPredict = modelFit.predict(trainX)
-testPredict = modelFit.predict(testX)
+validatePredict = modelFit.predict(validateX)
 
 # print the training accuracy and validation loss at each epoch
 print(modelEstimate.history)
@@ -107,17 +113,29 @@ print(len(modelFit.layers))
 df_train = np.column_stack((trainPredict, train[:, 1:]))
 trainPredict2 = scaler.inverse_transform(df_train)
 
-df_test = np.column_stack((testPredict, test[:, 1:]))
-testPredict2 = scaler.inverse_transform(df_test)
+df_validate = np.column_stack((validatePredict, validate[:, 1:]))
+validatePredict2 = scaler.inverse_transform(df_validate)
 
 # calculate root mean squared error
 
 
+
+##### Re-write the code from here on
+
 # Plot the forecast and actuals
-plt.plot(scaler.inverse_transform(dataset))
-plt.plot(trainPredictPlot)
-plt.plot(testPredictPlot)
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Keras RNN Error History')
+plt.ylabel('Mean Squared Error')
+plt.xlabel('Epoch')
+plt.legend(['Training Error', 'Validation Error'], loc='upper left')
 plt.show()
 
+# Plotting the hypothesis and Cross Validation y
+plt.plot(validationY[:-predictionPeriod])
+plt.plot(ho[predictionPeriod:]+np.mean(validationY)-np.mean(ho))
+plt.title('Keras Prediction Cross Validation Plot')
+plt.legend(['Hypothesis', 'Actual'], loc='upper left')
+plt.show()
 
 
