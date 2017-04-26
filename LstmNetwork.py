@@ -115,6 +115,7 @@ validatePredict2 = scaler.inverse_transform(df_validate)
 # Plot the errors of the epochs and MSE
 plt.plot(modelEstimate.history['loss'])
 plt.plot(modelEstimate.history['val_loss'])
+plt.plot(modelEstimate.history['val_acc'])
 plt.title('Model Error History')
 plt.ylabel('Mean Squared Error')
 plt.xlabel('Epochs')
