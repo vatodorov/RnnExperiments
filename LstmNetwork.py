@@ -15,14 +15,14 @@ Guide to Keras:
 @author: valentin
 """
 
-########################################### Import the functions and classes we'll need
+## Import the functions and classes we'll need
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas
 import math
 
 from keras.models import Sequential
-from keras.layers import LSTM, Dense
+from keras.layers import LSTM, Dense, Dropout
 from keras import backend as K
 
 from sklearn import datasets
@@ -30,7 +30,9 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
 
-def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, randSeed):
+## Define model
+def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, randSeed,
+             kerasModelLoss, kerasModelOptimizer, kerasModelActivation):
              
     # susbser the data
     dataframe = inputData[:, (selectColumns), ]
@@ -78,13 +80,14 @@ def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, ran
     # Define the network
     modelFit = Sequential()
     modelFit.add(LSTM(4,
-                      activation = 'sigmoid',
+                      activation = kerasModelActivation,
                       input_shape = (1, 4)))
-    modelFit.add(Dense(1))
+    model.add(Dropout(.2))
+    modelFit.add(Dense(1, activation = 'linear'))
     
     # Before training the model, configure the learning process via the compile method
-    modelFit.compile(optimizer = 'adam',
-                     loss = 'mean_squared_error',
+    modelFit.compile(optimizer = kerasModelOptimizer,
+                     loss = kerasModelLoss,
                      metrics = ['accuracy'])
     
     # Train the model
@@ -115,7 +118,7 @@ def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, ran
     # Plot the errors of the epochs and MSE
     plt.plot(modelEstimate.history['loss'])
     plt.plot(modelEstimate.history['val_loss'])
-    plt.plot(modelEstimate.history['val_acc'])
+  #  plt.plot(modelEstimate.history['val_acc'])
     plt.title('Model Error History')
     plt.ylabel('Mean Squared Error')
     plt.xlabel('Epochs')
@@ -126,7 +129,7 @@ def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, ran
     
 
     
-############################################ Define input parameters
+## Define input parameters
 
 inputData = datasets.load_boston()["data"]
 
@@ -134,5 +137,9 @@ rnnModel(inputData = inputData, # read in the Boston housing data
          selectColumns = (11, 0, 6, 12, 5),          # select columns from input dataset
          subsetXVarColumns = [1, 2, 3, 4],           # select predictive features
          subsetYVarColumns = [0],                    # select target
-         randSeed = 7                                # select random seed to reproduce results
+         randSeed = 9,                               # select random seed to reproduce results
+         
+         kerasModelLoss = 'mean_squared_error',      # poisson, mean_squared_error, binary_crossentropy
+         kerasModelOptimizer = 'adagrad',            # adam, adagrad
+         kerasModelActivation = 'sigmoid'            # sigmoid, relu, linear, softmax
          )
