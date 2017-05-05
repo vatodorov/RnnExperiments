@@ -82,7 +82,7 @@ def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, ran
     modelFit.add(LSTM(4,
                       activation = kerasModelActivation,
                       input_shape = (1, 4)))
-    model.add(Dropout(.2))
+    modelFit.add(Dropout(.2))
     modelFit.add(Dense(1, activation = 'linear'))
     
     # Before training the model, configure the learning process via the compile method
