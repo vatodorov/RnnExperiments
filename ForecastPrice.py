@@ -1,9 +1,5 @@
 
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Sat Apr 15 08:33:31 2017
-
 This is a trained Recurrent Neural Network (LSTM) to predict time series data
 
 Adopted from:
@@ -18,7 +14,7 @@ Guide to Keras:
 ## Import the functions and classes we'll need
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas
+import pandas as pd
 import math
 
 from keras.models import Sequential
@@ -31,8 +27,7 @@ from sklearn.metrics import mean_squared_error
 
 
 ## Define model
-def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, randSeed,
-             kerasModelLoss, kerasModelOptimizer, kerasModelActivation):
+def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, randSeed):
              
     # susbser the data
     dataframe = inputData[:, (selectColumns), ]
@@ -79,23 +74,23 @@ def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, ran
     # array structure in the form of: [samples, time steps, features]
     # Define the network
     modelFit = Sequential()
-    modelFit.add(LSTM(4,
-                      activation = kerasModelActivation,
-                      input_shape = (1, 4)))
-    modelFit.add(Dropout(.2))
+    modelFit.add(LSTM(20,
+                      activation = 'sigmoid',            # sigmoid, relu, linear, softmax
+                      input_shape = (1, 3)))
+    modelFit.add(Dropout(.1))
     modelFit.add(Dense(1, activation = 'linear'))
     
     # Before training the model, configure the learning process via the compile method
-    modelFit.compile(optimizer = kerasModelOptimizer,
-                     loss = kerasModelLoss,
+    modelFit.compile(optimizer = 'adagrad',              # adam, adagrad
+                     loss = 'mean_squared_error',        # poisson, mean_squared_error, binary_crossentropy
                      metrics = ['accuracy'])
     
     # Train the model
     modelEstimate = modelFit.fit(trainX, trainY,
-                                 epochs = 5,
+                                 epochs = 100,
                                  batch_size = 1,
                                  verbose = 1,
-                                 validation_data=(validateX, validateY))
+                                 validation_data = (validateX, validateY))
     
     # make predictions
     trainPredict = modelFit.predict(trainX)
@@ -129,17 +124,23 @@ def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, ran
     
 
     
-## Define input parameters
+# Read in the data
+brentPriceDf = pd.read_csv('C:/GitRepos/EAA_Analytics/Personal/VT/Forecasts/Brent_DI_data.csv')
+brentPriceDf.head(10)
 
-inputData = datasets.load_boston()["data"]
+# Remove the forecasts from the data
+# inputData.BrentPrice[[inputData.Date > 2017-01-01 00:00:00]] = 0
 
-rnnModel(inputData = inputData, # read in the Boston housing data
-         selectColumns = (11, 0, 6, 12, 5),          # select columns from input dataset
-         subsetXVarColumns = [1, 2, 3, 4],           # select predictive features
+# Format "Date" field as date
+brentPriceDf[['Date']] = pd.to_datetime(brentPriceDf.Date)
+
+# Convert the data frame to a Numpy array
+brentPriceArr = brentPriceDf.iloc[:,0:].values
+
+
+rnnModel(inputData = brentPriceArr, # read in the Boston housing data
+         selectColumns = (1, 2, 3, 4),          # select columns from input dataset
+         subsetXVarColumns = [1, 2, 3],              # select predictive features
          subsetYVarColumns = [0],                    # select target
-         randSeed = 9,                               # select random seed to reproduce results
-         
-         kerasModelLoss = 'mean_squared_error',      # poisson, mean_squared_error, binary_crossentropy
-         kerasModelOptimizer = 'adagrad',            # adam, adagrad
-         kerasModelActivation = 'sigmoid'            # sigmoid, relu, linear, softmax
+         randSeed = 9                               # select random seed to reproduce results
          )
