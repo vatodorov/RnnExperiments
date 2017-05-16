@@ -144,7 +144,7 @@ actualValueTarget = pd.DataFrame(dataframe[:, 0])
 actualValueTarget.columns = ['actual_B']
 
 
-
+finalDf = pd.concat([actualValueTarget, combinedDf], axis = 1)
 
 
 
