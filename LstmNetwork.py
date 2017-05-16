@@ -31,8 +31,7 @@ from sklearn.metrics import mean_squared_error
 
 
 ## Define model
-def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, randSeed,
-             kerasModelLoss, kerasModelOptimizer, kerasModelActivation):
+def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, randSeed):
              
     # susbser the data
     dataframe = inputData[:, (selectColumns), ]
@@ -80,14 +79,14 @@ def rnnModel(inputData, selectColumns, subsetXVarColumns, subsetYVarColumns, ran
     # Define the network
     modelFit = Sequential()
     modelFit.add(LSTM(4,
-                      activation = kerasModelActivation,
+                      activation = 'sigmoid',             # sigmoid, relu, linear, softmax
                       input_shape = (1, 4)))
     modelFit.add(Dropout(.2))
     modelFit.add(Dense(1, activation = 'linear'))
     
     # Before training the model, configure the learning process via the compile method
-    modelFit.compile(optimizer = kerasModelOptimizer,
-                     loss = kerasModelLoss,
+    modelFit.compile(optimizer = 'adagrad',               # adam, adagrad
+                     loss = 'mean_squared_error',         # poisson, mean_squared_error, binary_crossentropy
                      metrics = ['accuracy'])
     
     # Train the model
@@ -137,9 +136,5 @@ rnnModel(inputData = inputData, # read in the Boston housing data
          selectColumns = (11, 0, 6, 12, 5),          # select columns from input dataset
          subsetXVarColumns = [1, 2, 3, 4],           # select predictive features
          subsetYVarColumns = [0],                    # select target
-         randSeed = 9,                               # select random seed to reproduce results
-         
-         kerasModelLoss = 'mean_squared_error',      # poisson, mean_squared_error, binary_crossentropy
-         kerasModelOptimizer = 'adagrad',            # adam, adagrad
-         kerasModelActivation = 'sigmoid'            # sigmoid, relu, linear, softmax
+         randSeed = 9                               # select random seed to reproduce results
          )
