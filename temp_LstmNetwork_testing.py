@@ -1,6 +1,5 @@
 
 """
-Created on Sat Apr 15 08:33:31 2017
 
 This is a trained Recurrent Neural Network (LSTM) to predict time series data
 
@@ -16,7 +15,7 @@ Guide to Keras:
 ## Import the functions and classes we'll need
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas
+import pandas as pd
 import math
 
 from keras.models import Sequential
@@ -29,7 +28,7 @@ from sklearn.metrics import mean_squared_error
 
 
 # Give values for parameters
-dataLocation = ""
+dataLocation = "C:/GitRepos/EAA_Analytics/Personal/VT/Forecasts/"
 inputData = datasets.load_boston()["data"]
 nm = datasets.load_boston()["feature_names"]
 selectColumns = (11, 0, 6, 12, 5)             # select columns from input dataset
@@ -143,10 +142,11 @@ combinedDf.columns = ['forecast_B', 'crim', 'age', 'lstat', 'rm']
 actualValueTarget = pd.DataFrame(dataframe[:, 0])
 actualValueTarget.columns = ['actual_B']
 
-finalDf = pd.concat([actualValueTarget, combinedDf], axis = 1)
 
-# Write the final dataframe to a CSV file
-finalDf.to_csv("", sep = '\t')
+
+# Create the dataframe and write it to a CSV file
+finalDf = pd.concat([actualValueTarget, combinedDf], axis = 1)
+finalDf.to_csv(dataLocation + "Brent_forecast.csv", sep = ',')
 
 
 
