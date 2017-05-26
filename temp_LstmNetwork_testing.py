@@ -29,6 +29,7 @@ from sklearn.metrics import mean_squared_error
 
 
 # Give values for parameters
+dataLocation = ""
 inputData = datasets.load_boston()["data"]
 nm = datasets.load_boston()["feature_names"]
 selectColumns = (11, 0, 6, 12, 5)             # select columns from input dataset
@@ -139,12 +140,34 @@ combinedDf = pd.concat([pd.DataFrame(trainPredict2), pd.DataFrame(validatePredic
 combinedDf.index = range(len(combinedDf))
 combinedDf.columns = ['forecast_B', 'crim', 'age', 'lstat', 'rm']
 
-
 actualValueTarget = pd.DataFrame(dataframe[:, 0])
 actualValueTarget.columns = ['actual_B']
 
-
 finalDf = pd.concat([actualValueTarget, combinedDf], axis = 1)
+
+# Write the final dataframe to a CSV file
+finalDf.to_csv("", sep = '\t')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
