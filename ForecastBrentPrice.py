@@ -1,8 +1,5 @@
 """
-This is a trained Recurrent Neural Network (LSTM) to predict time series data
-
-Adopted from:
-    http://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/
+This is a trained Recurrent Neural Network (LSTM) to predict Brent price
 
 Guide to Keras:
     https://keras.io/getting-started/sequential-model-guide/#training
@@ -11,10 +8,11 @@ Guide to Keras:
 """
 
 ## Import the functions and classes we'll need
+import winsound
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import math
 
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Dropout
@@ -27,6 +25,11 @@ from sklearn.metrics import mean_squared_error
 
 
 ########### Assign values to parameters
+
+# Number of epochs to run
+_epochs = 2000
+
+
 # Read in the data
 dataLocation = "C:/GitRepos/EAA_Analytics/Personal/VT/Forecasts/"
 
@@ -43,23 +46,26 @@ brentPriceDf[['Date']] = pd.to_datetime(brentPriceDf.Date)
 brentPriceArr = brentPriceDf.iloc[:, 0:].values
 
 
-####################################################
-inputData = brentPriceArr
-selectColumns = (1, 2, 3, 4)             # select columns from input dataset
-subsetXVarColumns = [1, 2, 3]              # select predictive features
-subsetYVarColumns = [0]                      # select target
-
+#####################################################
+#####################################################
 # Select random seed
-randSeed = 9
+randSeed = 789
+
+# Provide names of input features
+inputDataFrame = brentPriceDf
+inputData = brentPriceArr
+
+# Create a Numpy array from the input data
+dataframe = inputData[:, 1:, ]
+# xVarColumns = [1, 2, 3]                                   # Select features: BY DEFAULT, it uses all features in columns 1:END for predictors
+yVarColumns = [0]                                           # select target: The target should always be in the first column
+number_of_features = len(list(brentPriceDf)) - 2            # Calculate the number of features to be used in the network
+
+
 
 
 #####################################################
 #####################################################
-# Subset the data     
-dataframe = inputData[:, (selectColumns), ]
-xVarColumns = subsetXVarColumns
-yVarColumns = subsetYVarColumns
-
 # fix random seed for reproducibility
 np.random.seed(randSeed)
 
@@ -82,8 +88,8 @@ print(len(train), len(validate), len(dataset))
 
 ## Modify the data for the LSTM network - The LSTM network expects the input data (X)
 # to be provided with a specific array structure in the form of: [samples, time steps, features].
-trainX = train[:, xVarColumns]
-validateX = validate[:, xVarColumns]
+trainX = train[:, 1:]
+validateX = validate[:, 1:]
 
 trainY = train[:, yVarColumns]
 validateY = validate[:, yVarColumns]
@@ -102,7 +108,7 @@ validateX = validateX.reshape(validateX.shape[0], 1, validateX.shape[1])
 modelFit = Sequential()
 modelFit.add(LSTM(20,
 				  activation = 'sigmoid',            # sigmoid, relu, linear, softmax
-				  input_shape = (1, 3)))
+				  input_shape = (1, number_of_features)))
 modelFit.add(Dropout(.1))
 modelFit.add(Dense(1, activation = 'linear'))
 
@@ -113,7 +119,7 @@ modelFit.compile(optimizer = 'adagrad',              # adam, adagrad
 
 # Train the model
 modelEstimate = modelFit.fit(trainX, trainY,
-							 epochs = 1000,
+							 epochs = _epochs,
 							 batch_size = 1,
 							 verbose = 1,
 							 validation_data = (validateX, validateY))
@@ -150,20 +156,26 @@ plt.show()
 
 ###################################################
 # Combine the final datasest - merge the training and validation datasets and rename columns
-combinedDf = pd.concat([pd.DataFrame(trainPredict2), pd.DataFrame(validatePredict2)])
-combinedDf.index = range(len(combinedDf))
+combined_dataframe = pd.concat([pd.DataFrame(trainPredict2), pd.DataFrame(validatePredict2)])
+combined_dataframe.index = range(len(combined_dataframe))
 
-combinedDf.columns = ['forecast_brent_price', 'CPI__USA_M_FGI', 'D_EU_LIQUIDS', 'D_NA_LIQUIDS']
+# Add columns names to the data frame with the forecasts
+names_list = list(inputDataFrame)[1:]
+names_list[0] = 'forecast_brent_price'
 
-actualValueTarget = pd.DataFrame(dataframe[:, 0])
-actualValueTarget.columns = ['actual_brent_price']
+combined_dataframe.columns = names_list
 
+actual_value_target = pd.DataFrame(dataframe[:, 0])
+actual_value_target.columns = ['actual_brent_price']
 
 
 # Create the dataframe and write it to a CSV file
-finalDf = pd.concat([actualValueTarget, combinedDf], axis = 1)
-finalDf.to_csv(dataLocation + "Brent_forecast.csv", sep = ',')
+final_forecast_file = pd.concat([actual_value_target, combined_dataframe], axis = 1)
+final_forecast_file.to_csv(dataLocation + "Brent_forecast.csv", sep = ',')
 
+
+# Beep when done with code
+winsound.Beep(750, 200)
 
 
 
