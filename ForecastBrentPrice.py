@@ -107,15 +107,17 @@ validateX = validateX.reshape(validateX.shape[0], 1, validateX.shape[1])
 # Define the network
 modelFit = Sequential()
 modelFit.add(LSTM(20,
-				  activation = 'sigmoid',            # sigmoid, relu, linear, softmax
+				  activation = 'sigmoid',                                  # sigmoid, relu, linear, softmax
 				  input_shape = (1, number_of_features)))
 modelFit.add(Dropout(.1))
 modelFit.add(Dense(1, activation = 'linear'))
 
 # Before training the model, configure the learning process via the compile method
-modelFit.compile(optimizer = 'adagrad',              # adam, adagrad
-				 loss = 'mean_squared_error',        # poisson, mean_squared_error, binary_crossentropy
+modelFit.compile(optimizer = 'adagrad',                                 # adam, adagrad
+				 loss = 'mean_squared_error',                             # poisson, mean_squared_error, binary_crossentropy
 				 metrics = ['accuracy'])
+
+print(modelFit.summary())
 
 # Train the model
 modelEstimate = modelFit.fit(trainX, trainY,
@@ -145,7 +147,7 @@ validatePredict2 = scaler.inverse_transform(df_validate)
 # Plot the errors of the epochs and MSE
 plt.plot(modelEstimate.history['loss'])
 plt.plot(modelEstimate.history['val_loss'])
-  #  plt.plot(modelEstimate.history['val_acc'])
+#  plt.plot(modelEstimate.history['val_acc'])
 plt.title('Model Error History')
 plt.ylabel('Mean Squared Error')
 plt.xlabel('Epochs')
