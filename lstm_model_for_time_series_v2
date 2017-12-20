@@ -9,8 +9,7 @@
    "outputs": [],
    "source": [
     "\"\"\"\n",
-    "This is a trained LSTM to predict Brent price\n",
-    "Author: Valentin Todorov\n",
+    "This is a trained LSTM model for time series data\n",
     "\"\"\"\n",
     "\n",
     "# Import the functions and classes we'll need\n",
